@@ -9,7 +9,8 @@ from loader import dp
 @dp.message_handler(Command("menu"))
 async def show_menu(message: Message):
     await message.answer("Меню:")
-    await message.answer("Выберите товар из меню ниже", reply_markup=choice)
+    await message.answer("Выберите товар из меню ниже",reply_markup=choice)
+
 
 
 @dp.message_handler(Text(equals=["Котлетки", "Макарошки", "Пюрешка"]))
