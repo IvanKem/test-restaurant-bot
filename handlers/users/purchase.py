@@ -18,7 +18,7 @@ async def buying_salad(call: CallbackQuery, callback_data: dict):
 
     message_data = await call.message.answer(f'(+{quantity}) Салат стоимостью {price}р, добавлен в корзину', reply_markup=go_to_bucket)
     print(message_data)
-    await DBCommands.add_salad(DBCommands, message_data['chat']['id'], price)
+    await DBCommands.add_salad(DBCommands, message_data['chat']['id'], quantity, price)
 
 
 @dp.callback_query_handler(buy_callback.filter(item_name='soup'))
@@ -30,7 +30,7 @@ async def buying_soup(call: CallbackQuery, callback_data: dict):
 
     message_data = await call.message.answer(f'(+{quantity}) Суп, стоимостью {price}р, добавлен в корзину', reply_markup=go_to_bucket)
     print(message_data)
-    await DBCommands.add_soup(DBCommands, message_data['chat']['id'], price)
+    await DBCommands.add_soup(DBCommands, message_data['chat']['id'], quantity, price)
 
 
 @dp.callback_query_handler(text_contains='cancel')

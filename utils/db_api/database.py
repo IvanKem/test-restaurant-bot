@@ -51,21 +51,21 @@ class DBCommands:
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
         return user
 
-    async def add_salad(self, user_id, price):
+    async def add_salad(self, user_id, quantity:Integer ,price):
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
         count = user.salad
         salad_price = user.salad_price
 
-        await Bucket.update.values(soup=int(count) + 1, salad_price=int(salad_price) + int(price)).where(
+        await Bucket.update.values(salad=int(count) + int(quantity), salad_price=int(salad_price) + int(price)).where(
             Bucket.user_id == user_id).gino.status()
 
 
-    async def add_soup(self, user_id, price):
+    async def add_soup(self, user_id, quantity, price):
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
         count = user.soup
         soup_price = user.soup_price
 
-        await Bucket.update.values(soup=int(count) + 1, soup_price=int(soup_price)+int(price)).where(
+        await Bucket.update.values(soup=int(count) + int(quantity), soup_price=int(soup_price)+int(price)).where(
             Bucket.user_id == user_id).gino.status()
 
 
@@ -88,5 +88,5 @@ async def create_db():
     await db.set_bind(f'postgresql://{db_user}:{db_pass}@{host}/gino')
     # Create tables
     db.gino: GinoSchemaVisitor
-    #await db.gino.drop_all()
+    await db.gino.drop_all()
     await db.gino.create_all()
