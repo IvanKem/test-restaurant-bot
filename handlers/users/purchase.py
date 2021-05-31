@@ -4,7 +4,7 @@ from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 
 from keyboards.default import to_menu
 from keyboards.inline import buy_callback
-from keyboards.inline.choice_button import choice, go_to_bucket
+from keyboards.inline.choice_button import go_to_bucket
 from loader import dp
 from utils.db_api import DBCommands
 

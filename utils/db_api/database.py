@@ -1,8 +1,7 @@
 from aiogram import types, Bot
 from gino import Gino
 from gino.schema import GinoSchemaVisitor
-from sqlalchemy import (Column, Integer, BigInteger, String,
-                        Sequence, TIMESTAMP, Boolean, JSON)
+from sqlalchemy import (Column, Integer, BigInteger, String, Sequence, TIMESTAMP, Boolean, JSON)
 from sqlalchemy import sql
 
 from data.config import db_pass, db_user, host
@@ -32,6 +31,8 @@ class Purchase(db.Model):
     username = Column(String(100))
     soup = Column(Integer, default=0)
     salad = Column(Integer, default=0)
+    salad_price = Column(Integer, default=0)
+    soup_price = Column(Integer, default=0)
     sum_price = Column(Integer, default=0)
     email = Column(String(200))
 
@@ -65,9 +66,8 @@ class DBCommands:
         soup_price = user.soup_price
 
         await Bucket.update.values(soup=int(count) + int(quantity),
-                                          soup_price=int(soup_price) + int(price)).where(
+                                   soup_price=int(soup_price) + int(price)).where(
             Bucket.user_id == user_id).gino.status()
-
 
     async def bucket_sum_get(self, user_id):
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
@@ -77,11 +77,14 @@ class DBCommands:
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
         return user.sum_price
 
+    async def clean_bucket(self, user_id):
+        await Bucket.update.values(soup=0, salad=0, salad_price=0, soup_price=0).where(
+            Bucket.user_id == user_id).gino.status()
 
-    async def create_new_purchase(self, user_id, username, soup, salad, sum_price, email=None):
-        user = await Purchase.create(user_id=user_id, username=username, soup=soup, salad=salad,
-                                     sum_price=sum_price, email=email)
-        return 'Новый заказ создан и сохранен в базе данных'
+    async def create_new_purchase(self, username, soup, salad, salad_price, soup_price, sum_price, email=None):
+        user = await Purchase.create(username=username, soup=soup, salad=salad,
+                                     salad_price=salad_price, soup_price=soup_price, sum_price=sum_price, email=email)
+
 
 
 async def create_db():
