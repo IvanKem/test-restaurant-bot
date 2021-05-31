@@ -13,7 +13,15 @@ from utils.db_api import DBCommands
 async def show_menu(message: Message):
     message_data = await message.answer("Корзина: ", reply_markup=to_menu)
     user = await DBCommands.get_user(DBCommands, message_data['chat']['id'], message_data['chat']['username'])
-    #await message.answer(f"Cуп * {user.soup} = {user.soup_price}")
+    product_name = 'soup'
+    markup = await bucket_data(message_data['chat']['id'], product_name)
+    await message.answer(f'Суп * {user.soup} = {user.soup_price} руб.', reply_markup=markup)
+    product_name = 'salad'
+    markup = await bucket_data(message_data['chat']['id'], product_name)
+    await message.answer(f'Салат* {user.salad} = {user.salad_price} руб.', reply_markup=markup)
+    sum_price = await DBCommands.bucket_sum_get(DBCommands, message_data['chat']['id'])
+    markup = await bucket_sum_update(message_data['chat']['id'])
+    await message.answer(f'Стоимость всего заказа {sum_price} руб.', reply_markup=markup)
 
 
 @dp.callback_query_handler(text_contains="bucket")
