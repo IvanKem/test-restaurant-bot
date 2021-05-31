@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from keyboards.inline.callback_data import buy_callback
+from keyboards.inline.callback_data import buy_callback, change_bucket
 
 choice = InlineKeyboardMarkup(
     inline_keyboard=[

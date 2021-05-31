@@ -38,7 +38,7 @@ class Purchase(db.Model):
 
 class DBCommands:
 
-    async def get_user(self, user_id, username):
+    async def get_user(self, user_id, username=None):
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
 
         if user is None:
@@ -51,7 +51,7 @@ class DBCommands:
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
         return user
 
-    async def add_salad(self, user_id, quantity:Integer ,price):
+    async def add_salad(self, user_id, quantity: int, price: int):
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
         count = user.salad
         salad_price = user.salad_price
@@ -59,13 +59,13 @@ class DBCommands:
         await Bucket.update.values(salad=int(count) + int(quantity), salad_price=int(salad_price) + int(price)).where(
             Bucket.user_id == user_id).gino.status()
 
-
-    async def add_soup(self, user_id, quantity, price):
+    async def add_soup(self, user_id, quantity: int, price: int):
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
         count = user.soup
         soup_price = user.soup_price
 
-        await Bucket.update.values(soup=int(count) + int(quantity), soup_price=int(soup_price)+int(price)).where(
+        await Bucket.update.values(soup=int(count) + int(quantity),
+                                          soup_price=int(soup_price) + int(price)).where(
             Bucket.user_id == user_id).gino.status()
 
 
@@ -75,8 +75,7 @@ class DBCommands:
         await Bucket.update.values(sum_price=sum_price).where(
             Bucket.user_id == user_id).gino.status()
 
-        return sum_price, user.salad, user.salad_price, user.soup. user.soup_price
-
+        return sum_price, user.salad, user.salad_price, user.soup.user.soup_price
 
     async def create_new_purchase(self, user_id, username, soup, salad, sum_price, email):
         user = await Purchase.create(user_id=user_id, username=username, soup=soup, salad=salad,
@@ -88,5 +87,5 @@ async def create_db():
     await db.set_bind(f'postgresql://{db_user}:{db_pass}@{host}/gino')
     # Create tables
     db.gino: GinoSchemaVisitor
-    await db.gino.drop_all()
+    # await db.gino.drop_all()
     await db.gino.create_all()
