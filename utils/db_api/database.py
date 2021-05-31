@@ -71,16 +71,17 @@ class DBCommands:
 
     async def bucket_sum_get(self, user_id):
         user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
-        sum_price = user.sum_salad_price + user.sum_soup_price
-        await Bucket.update.values(sum_price=sum_price).where(
+        sum = user.salad_price + user.soup_price
+        await Bucket.update.values(sum_price=sum).where(
             Bucket.user_id == user_id).gino.status()
+        user = await Bucket.query.where(Bucket.user_id == user_id).gino.first()
+        return user.sum_price
 
-        return sum_price, user.salad, user.salad_price, user.soup.user.soup_price
 
-    async def create_new_purchase(self, user_id, username, soup, salad, sum_price, email):
+    async def create_new_purchase(self, user_id, username, soup, salad, sum_price, email=None):
         user = await Purchase.create(user_id=user_id, username=username, soup=soup, salad=salad,
                                      sum_price=sum_price, email=email)
-        return user
+        return 'Новый заказ создан и сохранен в базе данных'
 
 
 async def create_db():
