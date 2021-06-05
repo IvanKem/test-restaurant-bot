@@ -27,10 +27,12 @@ async def show_menu(message: Message):
         await message.answer(text='В вашей корзине пусто, закажите что-нибудь)')
     else:
         markup = await bucket_data(message_data['chat']['id'], product_name)
-        await message.answer(f'Суп * {user.soup} = {user.soup_price} руб.', reply_markup=markup)
+        if user.soup != 0:
+            await message.answer(f'Суп * {user.soup} = {user.soup_price} руб.', reply_markup=markup)
         product_name = 'salad'
         markup = await bucket_data(message_data['chat']['id'], product_name)
-        await message.answer(f'Салат * {user.salad} = {user.salad_price} руб.', reply_markup=markup)
+        if user.salad != 0:
+            await message.answer(f'Салат * {user.salad} = {user.salad_price} руб.', reply_markup=markup)
         sum_price = await DBCommands.bucket_sum_get(DBCommands, message_data['chat']['id'])
         markup = await bucket_sum_update(message_data['chat']['id'])
         await message.answer(f'Стоимость всего заказа {sum_price} руб.', reply_markup=markup)

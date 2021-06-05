@@ -24,6 +24,6 @@ async def show_menu(message: Message):
                                        'и сытным. А пикантный соус добавляет блюду невероятный аромат и вкус.',
                                reply_markup=salad)
 
-    await message.answer(reply_markup=cancel)
+    #await message.answer_(reply_markup=cancel)
 
 
