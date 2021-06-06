@@ -86,10 +86,9 @@ class DBCommands:
                                      salad_price=salad_price, soup_price=soup_price, sum_price=sum_price, email=email)
 
 
-
 async def create_db():
     await db.set_bind(f'postgresql://{db_user}:{db_pass}@{host}/gino')
     # Create tables
     db.gino: GinoSchemaVisitor
-    # await db.gino.drop_all()
+    #await db.gino.drop_all()
     await db.gino.create_all()

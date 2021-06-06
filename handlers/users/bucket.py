@@ -6,7 +6,9 @@ from keyboards.inline.bucket_button import bucket_sum_update, order_approw
 from loader import dp
 import logging
 
-from utils.db_api import DBCommands
+from utils.db_api import database
+
+db = database.DBCommands()
 
 
 @dp.callback_query_handler(update_bucket.filter(update='clean_bucket'))
@@ -14,18 +16,19 @@ async def clean_bucket(call: CallbackQuery, callback_data: dict):
     await call.answer(cache_time=1)
     logging.info(f'call={callback_data}')
     user_id = int(callback_data.get('user_id'))
-    await DBCommands.clean_bucket(DBCommands, user_id)
+    await db.clean_bucket(user_id)
     await call.message.answer(text='В вашей корзине пусто, закажите что-нибудь)')
 
 
 @dp.message_handler(text="Корзина")
 async def show_menu(message: Message):
     message_data = await message.answer("Корзина: ", reply_markup=to_menu)
-    user = await DBCommands.get_user(DBCommands, message_data['chat']['id'], message_data['chat']['username'])
-    product_name = 'soup'
+    user = await db.get_user(message_data['chat']['id'], message_data['chat']['username'])
+
     if user.soup == 0 and user.salad == 0:
         await message.answer(text='В вашей корзине пусто, закажите что-нибудь)')
     else:
+        product_name = 'soup'
         markup = await bucket_data(message_data['chat']['id'], product_name)
         if user.soup != 0:
             await message.answer(f'Суп * {user.soup} = {user.soup_price} руб.', reply_markup=markup)
@@ -33,7 +36,7 @@ async def show_menu(message: Message):
         markup = await bucket_data(message_data['chat']['id'], product_name)
         if user.salad != 0:
             await message.answer(f'Салат * {user.salad} = {user.salad_price} руб.', reply_markup=markup)
-        sum_price = await DBCommands.bucket_sum_get(DBCommands, message_data['chat']['id'])
+        sum_price = await db.bucket_sum_get(message_data['chat']['id'])
         markup = await bucket_sum_update(message_data['chat']['id'])
         await message.answer(f'Стоимость всего заказа {sum_price} руб.', reply_markup=markup)
 
@@ -46,19 +49,21 @@ async def show_menu_from_callback(call: CallbackQuery):
     logging.info(f'call={callback_data}')
 
     message_data = await call.message.answer("Корзина: ", reply_markup=to_menu)
-    user = await DBCommands.get_user(DBCommands, message_data['chat']['id'], message_data['chat']['username'])
+    user = await db.get_user(message_data['chat']['id'], message_data['chat']['username'])
 
     if user.soup == 0 and user.salad == 0:
         await call.message.answer(text='В вашей корзине пусто, закажите что-нибудь)')
     else:
         product_name = 'soup'
         markup = await bucket_data(message_data['chat']['id'], product_name)
-        await call.message.answer(f'Суп * {user.soup} = {user.soup_price} руб.', reply_markup=markup)
+        if user.soup != 0:
+            await call.message.answer(f'Суп * {user.soup} = {user.soup_price} руб.', reply_markup=markup)
         product_name = 'salad'
         markup = await bucket_data(message_data['chat']['id'], product_name)
-        await call.message.answer(f'Салат * {user.salad} = {user.salad_price} руб.', reply_markup=markup)
+        if user.salad != 0:
+            await call.message.answer(f'Салат * {user.salad} = {user.salad_price} руб.', reply_markup=markup)
 
-        sum_price = await DBCommands.bucket_sum_get(DBCommands, message_data['chat']['id'])
+        sum_price = await db.bucket_sum_get(db, message_data['chat']['id'])
         markup = await bucket_sum_update(message_data['chat']['id'])
         await call.message.answer(f'Стоимость всего заказа {sum_price} руб.', reply_markup=markup)
 
@@ -74,11 +79,11 @@ async def change_bucket_soup(call: CallbackQuery, callback_data: dict):
     message_data = int(callback_data.get('user_id'))
     markup = await bucket_data(message_data, product_name)
     if add == 1:
-        await DBCommands.add_soup(DBCommands, message_data, 1, 400)
+        await db.add_soup(message_data, 1, 400)
     if delete == 1:
-        await DBCommands.add_soup(DBCommands, message_data, -1, -400)
+        await db.add_soup(message_data, -1, -400)
 
-    user = await DBCommands.get_user(DBCommands, message_data)
+    user = await db.get_user(message_data)
     await call.message.edit_text(f'Суп * {user.soup} = {user.soup_price} руб.', reply_markup=markup)
 
 
@@ -93,11 +98,11 @@ async def change_bucket_soup(call: CallbackQuery, callback_data: dict):
     message_data = int(callback_data.get('user_id'))
     markup = await bucket_data(message_data, product_name)
     if add == 1:
-        await DBCommands.add_salad(DBCommands, message_data, 1, 350)
+        await db.add_salad(message_data, 1, 350)
     if delete == 1:
-        await DBCommands.add_salad(DBCommands, message_data, -1, -350)
+        await db.add_salad(message_data, -1, -350)
 
-    user = await DBCommands.get_user(DBCommands, message_data)
+    user = await db.get_user(message_data)
 
     await call.message.edit_text(f'Сaлат * {user.salad} = {user.salad_price} руб.', reply_markup=markup)
 
@@ -108,7 +113,7 @@ async def update_sum_bucket(call: CallbackQuery, callback_data: dict):
     logging.info(f'call={callback_data}')
     user_id = int(callback_data.get('user_id'))
 
-    sum_price = await DBCommands.bucket_sum_get(DBCommands, user_id)
+    sum_price = await db.bucket_sum_get(user_id)
     markup = await bucket_sum_update(user_id)
     await call.message.edit_text(f'Стоимость всего заказа {sum_price} руб.', reply_markup=markup)
 
@@ -119,7 +124,7 @@ async def update_sum_bucket(call: CallbackQuery, callback_data: dict):
     logging.info(f'call={callback_data}')
     user_id = int(callback_data.get('user_id'))
     await call.message.answer(text='Подтвердите данные о заказе:')
-    user = await DBCommands.get_user(DBCommands, user_id)
+    user = await db.get_user(user_id)
     markup = await order_approw(user_id)
     await call.message.answer(
         f'Cуп по-фински (цена 400 руб за шт),\n количество {user.soup}, стоимостью {user.soup_price} руб.\n\n'
@@ -133,11 +138,11 @@ async def approw_order(call: CallbackQuery, callback_data: dict):
     await call.answer(cache_time=1)
     logging.info(f'call={callback_data}')
     user_id = int(callback_data.get('user_id'))
-    user = await DBCommands.get_user(DBCommands, user_id)
-    await DBCommands.create_new_purchase(DBCommands, user.username, user.soup,  user.salad,
+    user = await db.get_user(user_id)
+    await db.create_new_purchase(user.username, user.soup,  user.salad,
                                          user.salad_price, user.soup_price, user.sum_price)
     await call.message.answer(text='Новый заказ успешно создан и сохранен в базе данных')
-    await DBCommands.clean_bucket(DBCommands,user_id)
+    await db.clean_bucket(user_id)
 
 
 
